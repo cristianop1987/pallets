@@ -1,54 +1,125 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-br">
 <head>
-    <base target="_top">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registo de Pallets - Operacional</title>
     <style>
-        body { font-family: 'Roboto', sans-serif; background-color: #121212; color: #e0e0e0; padding: 20px; }
-        .container { max-width: 400px; margin: auto; background: #1e1e1e; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
-        h2 { text-align: center; color: #bb86fc; }
-        label { display: block; margin-top: 10px; font-weight: bold; }
-        input, select { width: 100%; padding: 10px; margin-top: 5px; background: #2c2c2c; border: 1px solid #333; color: white; border-radius: 4px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; margin-top: 20px; background-color: #03dac6; border: none; color: #000; font-weight: bold; cursor: pointer; border-radius: 4px; }
-        button:hover { background-color: #018786; }
-        #status { margin-top: 15px; text-align: center; font-size: 14px; }
+        :root {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --primary: #bb86fc;
+            --secondary: #03dac6;
+            --text: #e0e0e0;
+        }
+        body {
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: var(--card-bg);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+            width: 100%;
+            max-width: 350px;
+        }
+        h2 { text-align: center; color: var(--primary); margin-bottom: 1.5rem; }
+        label { display: block; margin-bottom: 0.5rem; font-size: 0.9rem; }
+        select, input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 1.2rem;
+            border-radius: 6px;
+            border: 1px solid #333;
+            background: #2c2c2c;
+            color: white;
+            box-sizing: border-box;
+            font-size: 1rem;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--secondary);
+            border: none;
+            border-radius: 6px;
+            color: #000;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        button:hover { opacity: 0.8; }
+        .status {
+            text-align: center;
+            margin-top: 1rem;
+            font-size: 0.85rem;
+            min-height: 1.2rem;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h2>Registro de Pallets</h2>
-        <form id="palletForm">
-            <label for="tipo">Tipo de Operação:</label>
-            <select id="tipo" name="tipo">
-                <option value="ENTRADAS">Entrada</option>
-                <option value="SAÍDAS">Saída</option>
-            </select>
 
-            <label for="codigo">Código do Pallet (Ex: PAG001234):</label>
-            <input type="text" id="codigo" name="codigo" placeholder="Digite o código" required>
+<div class="container">
+    <h2>Movimentação</h2>
+    <form id="palletForm">
+        <label>Operação</label>
+        <select id="tipo">
+            <option value="ENTRADAS">ENTRADA</option>
+            <option value="SAÍDAS">SAÍDA</option>
+        </select>
 
-            <button type="button" onclick="enviarDados()">Registrar Movimentação</button>
-        </form>
-        <div id="status"></div>
-    </div>
+        <label>Código do Pallet</label>
+        <input type="text" id="codigo" placeholder="Ex: PAG001234" required>
 
-    <script>
-        function enviarDados() {
-            var form = document.getElementById('palletForm');
-            var status = document.getElementById('status');
-            var dados = {
-                tipo: form.tipo.value,
-                codigo: form.codigo.value.toUpperCase()
-            };
+        <button type="button" onclick="enviarDados()">REGISTAR</button>
+    </form>
+    <div id="status" class="status"></div>
+</div>
 
-            status.innerHTML = "Enviando...";
-            google.script.run
-                .withSuccessHandler(function(res) {
-                    status.innerHTML = "Sucesso: " + dados.codigo + " registrado!";
-                    form.codigo.value = "";
-                })
-                .registrarNaPlanilha(dados);
+<script>
+    async function enviarDados() {
+        // SUBSTITUA pela URL que o Google vai te dar no final do processo de implantação
+        const urlScript = "https://script.google.com/macros/s/AKfycbwz6ExVh9FegnVdgZ2swsdeTECoRAX57gnALKyxIcnUbyY9784G_NR604XjQRYiR0L2/exec"; 
+        
+        const statusDiv = document.getElementById('status');
+        const codigoInput = document.getElementById('codigo');
+        const tipoSelect = document.getElementById('tipo');
+
+        const payload = {
+            tipo: tipoSelect.value,
+            codigo: codigoInput.value.trim().toUpperCase()
+        };
+
+        if(!payload.codigo) {
+            statusDiv.innerText = "Por favor, digite o código.";
+            return;
         }
-    </script>
+
+        statusDiv.style.color = "orange";
+        statusDiv.innerText = "A enviar...";
+
+        try {
+            await fetch(urlScript, {
+                method: "POST",
+                mode: "no-cors",
+                body: JSON.stringify(payload)
+            });
+            
+            statusDiv.style.color = "#03dac6";
+            statusDiv.innerText = "Sucesso: " + payload.codigo;
+            codigoInput.value = "";
+        } catch (error) {
+            statusDiv.style.color = "red";
+            statusDiv.innerText = "Erro ao conectar.";
+        }
+    }
+</script>
+
 </body>
 </html>
