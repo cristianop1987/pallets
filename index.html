@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <base target="_top">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Roboto', sans-serif; background-color: #121212; color: #e0e0e0; padding: 20px; }
+        .container { max-width: 400px; margin: auto; background: #1e1e1e; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        h2 { text-align: center; color: #bb86fc; }
+        label { display: block; margin-top: 10px; font-weight: bold; }
+        input, select { width: 100%; padding: 10px; margin-top: 5px; background: #2c2c2c; border: 1px solid #333; color: white; border-radius: 4px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; margin-top: 20px; background-color: #03dac6; border: none; color: #000; font-weight: bold; cursor: pointer; border-radius: 4px; }
+        button:hover { background-color: #018786; }
+        #status { margin-top: 15px; text-align: center; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Registro de Pallets</h2>
+        <form id="palletForm">
+            <label for="tipo">Tipo de Operação:</label>
+            <select id="tipo" name="tipo">
+                <option value="ENTRADAS">Entrada</option>
+                <option value="SAÍDAS">Saída</option>
+            </select>
+
+            <label for="codigo">Código do Pallet (Ex: PAG001234):</label>
+            <input type="text" id="codigo" name="codigo" placeholder="Digite o código" required>
+
+            <button type="button" onclick="enviarDados()">Registrar Movimentação</button>
+        </form>
+        <div id="status"></div>
+    </div>
+
+    <script>
+        function enviarDados() {
+            var form = document.getElementById('palletForm');
+            var status = document.getElementById('status');
+            var dados = {
+                tipo: form.tipo.value,
+                codigo: form.codigo.value.toUpperCase()
+            };
+
+            status.innerHTML = "Enviando...";
+            google.script.run
+                .withSuccessHandler(function(res) {
+                    status.innerHTML = "Sucesso: " + dados.codigo + " registrado!";
+                    form.codigo.value = "";
+                })
+                .registrarNaPlanilha(dados);
+        }
+    </script>
+</body>
+</html>
