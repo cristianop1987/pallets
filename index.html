@@ -3,123 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registo de Pallets - Operacional</title>
+    <title>Sistema Inventário Pallets</title>
     <style>
-        :root {
-            --bg-color: #121212;
-            --card-bg: #1e1e1e;
-            --primary: #bb86fc;
-            --secondary: #03dac6;
-            --text: #e0e0e0;
-        }
-        body {
-            font-family: 'Segoe UI', Roboto, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .container {
-            background-color: var(--card-bg);
-            padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
-            width: 100%;
-            max-width: 350px;
-        }
-        h2 { text-align: center; color: var(--primary); margin-bottom: 1.5rem; }
-        label { display: block; margin-bottom: 0.5rem; font-size: 0.9rem; }
-        select, input {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 1.2rem;
-            border-radius: 6px;
-            border: 1px solid #333;
-            background: #2c2c2c;
-            color: white;
-            box-sizing: border-box;
-            font-size: 1rem;
-        }
-        button {
-            width: 100%;
-            padding: 12px;
-            background-color: var(--secondary);
-            border: none;
-            border-radius: 6px;
-            color: #000;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-        button:hover { opacity: 0.8; }
-        .status {
-            text-align: center;
-            margin-top: 1rem;
-            font-size: 0.85rem;
-            min-height: 1.2rem;
-        }
+        :root { --bg: #121212; --card: #1e1e1e; --primary: #bb86fc; --accent: #03dac6; --txt: #e0e0e0; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--txt); display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .container { background: var(--card); padding: 2rem; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 100%; max-width: 350px; }
+        h2 { text-align: center; color: var(--primary); margin-bottom: 1.5rem; font-weight: 300; }
+        label { display: block; margin-bottom: 5px; font-size: 0.8rem; color: #aaa; }
+        select, input { width: 100%; padding: 12px; margin-bottom: 1.2rem; border-radius: 6px; border: 1px solid #333; background: #2c2c2c; color: white; box-sizing: border-box; }
+        button { width: 100%; padding: 14px; background: var(--accent); border: none; border-radius: 6px; color: #000; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        button:hover { filter: brightness(1.1); }
+        .status { text-align: center; margin-top: 1rem; font-size: 0.9rem; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Movimentação</h2>
+    <h2>Gestão de Estoque</h2>
     <form id="palletForm">
-        <label>Operação</label>
+        <label>MOVIMENTAÇÃO</label>
         <select id="tipo">
-            <option value="ENTRADAS">ENTRADA</option>
-            <option value="SAÍDAS">SAÍDA</option>
+            <option value="ENTRADAS">ENTRADA (Adicionar à Base)</option>
+            <option value="SAÍDAS">SAÍDA (Remover da Base)</option>
         </select>
 
-        <label>Código do Pallet</label>
-        <input type="text" id="codigo" placeholder="Ex: PAG001234" required>
+        <label>ID DO PALLET</label>
+        <input type="text" id="codigo" placeholder="Ex: PAG001234" required autofocus>
 
-        <button type="button" onclick="enviarDados()">REGISTAR</button>
+        <button type="button" onclick="enviar()">REGISTRAR</button>
     </form>
     <div id="status" class="status"></div>
 </div>
 
 <script>
-    async function enviarDados() {
-        // SUBSTITUA pela URL que o Google vai te dar no final do processo de implantação
-        const urlScript = "https://script.google.com/macros/s/AKfycbxo4avomEIfpT_v-EYBl70MGhhd71y-ARgsjsde2ZZaWveK9--WEaAYfr1sgjVg-7qc/exec"; 
+    async function enviar() {
+        // ATENÇÃO: COLOQUE SUA URL DE IMPLANTAÇÃO ABAIXO
+        const urlScript = "https://script.google.com/macros/s/AKfycby8r23URoPZecrwcBNaKzIMhFQxm1DXwKhz9do8wdGoPe3wGsawolBCDKV7ialoZqFI/exec"; 
         
-        const statusDiv = document.getElementById('status');
+        const status = document.getElementById('status');
         const codigoInput = document.getElementById('codigo');
-        const tipoSelect = document.getElementById('tipo');
+        const tipo = document.getElementById('tipo').value;
 
-        const payload = {
-            tipo: tipoSelect.value,
-            codigo: codigoInput.value.trim().toUpperCase()
-        };
+        if(!codigoInput.value) return;
 
-        if(!payload.codigo) {
-            statusDiv.innerText = "Por favor, digite o código.";
-            return;
-        }
-
-        statusDiv.style.color = "orange";
-        statusDiv.innerText = "A enviar...";
+        status.style.color = "orange";
+        status.innerText = "Processando estoque...";
 
         try {
             await fetch(urlScript, {
                 method: "POST",
                 mode: "no-cors",
-                body: JSON.stringify(payload)
+                body: JSON.stringify({ tipo: tipo, codigo: codigoInput.value.toUpperCase() })
             });
             
-            statusDiv.style.color = "#03dac6";
-            statusDiv.innerText = "Sucesso: " + payload.codigo;
+            status.style.color = "#03dac6";
+            status.innerText = "Pallet atualizado na base!";
             codigoInput.value = "";
-        } catch (error) {
-            statusDiv.style.color = "red";
-            statusDiv.innerText = "Erro ao conectar.";
+            codigoInput.focus();
+        } catch (e) {
+            status.style.color = "red";
+            status.innerText = "Erro de conexão.";
         }
     }
 </script>
-
 </body>
 </html>
