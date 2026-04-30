@@ -10,17 +10,17 @@
         .container { background: var(--card); padding: 2rem; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 100%; max-width: 350px; }
         h2 { text-align: center; color: var(--primary); margin-bottom: 1.5rem; font-weight: 300; }
         label { display: block; margin-bottom: 5px; font-size: 0.8rem; color: #aaa; }
-        select, input { width: 100%; padding: 12px; margin-bottom: 1.2rem; border-radius: 6px; border: 1px solid #333; background: #2c2c2c; color: white; box-sizing: border-box; }
+        select, input { width: 100%; padding: 12px; margin-bottom: 1.2rem; border-radius: 6px; border: 1px solid #333; background: #2c2c2c; color: white; box-sizing: border-box; font-size: 1rem; }
         button { width: 100%; padding: 14px; background: var(--accent); border: none; border-radius: 6px; color: #000; font-weight: bold; cursor: pointer; transition: 0.3s; }
         button:hover { filter: brightness(1.1); }
-        .status { text-align: center; margin-top: 1rem; font-size: 0.9rem; font-weight: bold; }
+        .status { text-align: center; margin-top: 1rem; font-size: 0.9rem; font-weight: bold; min-height: 1.2rem; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <h2>Gestão de Estoque</h2>
-    <form id="palletForm">
+    <form id="palletForm" onsubmit="return false;">
         <label>MOVIMENTAÇÃO</label>
         <select id="tipo">
             <option value="ENTRADAS">ENTRADA (Adicionar à Base)</option>
@@ -28,7 +28,7 @@
         </select>
 
         <label>ID DO PALLET</label>
-        <input type="text" id="codigo" placeholder="Ex: PAG001234" required autofocus>
+        <input type="text" id="codigo" placeholder="Ex: PAG001234" required autofocus onkeydown="verificarEnter(event)">
 
         <button type="button" onclick="enviar()">REGISTRAR</button>
     </form>
@@ -36,6 +36,13 @@
 </div>
 
 <script>
+    // Função para detectar a tecla Enter
+    function verificarEnter(event) {
+        if (event.key === "Enter") {
+            enviar();
+        }
+    }
+
     async function enviar() {
         // ATENÇÃO: COLOQUE SUA URL DE IMPLANTAÇÃO ABAIXO
         const urlScript = "https://script.google.com/macros/s/AKfycbxUf0_KrdxU-S3Pc2eAmi1ei8YIhpcJRUZ3yWtNQDh2YmVOGIOhTAMfNL4GZOi4EV0R/exec"; 
@@ -44,7 +51,13 @@
         const codigoInput = document.getElementById('codigo');
         const tipo = document.getElementById('tipo').value;
 
-        if(!codigoInput.value) return;
+        const codigoValor = codigoInput.value.trim().toUpperCase();
+
+        if(!codigoValor) {
+            status.style.color = "yellow";
+            status.innerText = "Digite um código!";
+            return;
+        }
 
         status.style.color = "orange";
         status.innerText = "Processando estoque...";
@@ -53,11 +66,11 @@
             await fetch(urlScript, {
                 method: "POST",
                 mode: "no-cors",
-                body: JSON.stringify({ tipo: tipo, codigo: codigoInput.value.toUpperCase() })
+                body: JSON.stringify({ tipo: tipo, codigo: codigoValor })
             });
             
             status.style.color = "#03dac6";
-            status.innerText = "Pallet atualizado na base!";
+            status.innerText = "Sucesso: " + codigoValor;
             codigoInput.value = "";
             codigoInput.focus();
         } catch (e) {
